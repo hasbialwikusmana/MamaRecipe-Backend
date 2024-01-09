@@ -11,7 +11,7 @@
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
-npx sequelize-cli model:generate --name User --attributes name:STRING,email:STRING,phone:STRING,password:STRING,image:STRING
+npx sequelize-cli model:generate --name Users --attributes name:STRING,email:STRING,phone:STRING,password:STRING,image:STRING
 
 
 npx sequelize-cli db:migrate
