@@ -4,39 +4,51 @@ const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const authHelpers = require("../helpers/auth");
 const commonHelpers = require("../helpers/common");
-const userModel = require("../models/users");
+const models = require("../models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
 // BUATKAN DENGAN ORM SEQUELIZE
-
+const getAll = async (req, res, next) => {
+  try {
+    const result = await models.user.findAll();
+    commonHelpers.response(res, result, 200, "success get all users");
+  } catch (error) {
+    console.log(error);
+  }
+};
 const register = async (req, res, next) => {
   try {
-    const { name, email, phone, password } = req.body;
+    // register sequelize cli
+    const schema = Joi.object({
+      name: Joi.string().empty("").required(),
+      email: Joi.string().email().empty("").required(),
+      phone: Joi.string().empty("").required(),
+      password: Joi.string().min(8).empty("").required(),
+    });
 
-    // Pengecekan email
-    const existingUser = await userModel.findOne({ where: { email: email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    } else {
+      const checkEmail = await models.user.findOne({ where: { email: req.body.email } });
+      if (checkEmail) {
+        return commonHelpers.response(res, null, 400, "Email already exists");
+      }
     }
-
-    // Membuat hashed password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashPassword = await bcrypt.hash(req.body.password, salt);
+    const userId = uuidv4();
 
-    const newUser = {
-      id: uuidv4(),
-      name: name,
-      email: email,
-      phone: phone,
-      password: hashedPassword,
-    };
+    req.body.password = hashPassword;
+    req.body.id = userId;
 
-    const user = await userModel.create(newUser);
-    res.status(201).json({ message: "User registered successfully", user });
+    const result = await models.user.create(req.body);
+
+    commonHelpers.response(res, result, 200, null);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.log(error);
   }
 };
 
@@ -54,7 +66,7 @@ const login = async (req, res, next) => {
       return next(errorServer);
     }
 
-    const checkEmail = await userModel.findOne({ where: { email: email } });
+    const checkEmail = await Users.findOne({ where: { email: email } });
     if (!checkEmail) {
       return next(errorServer);
     }
@@ -90,7 +102,7 @@ const profile = async (req, res, next) => {
   try {
     const payload = req.payload;
 
-    const result = await userModel.findOne({
+    const result = await Users.findOne({
       where: { id: payload.id },
       attributes: { exclude: ["password", "createdAt", "updatedAt"] },
     });
@@ -101,4 +113,4 @@ const profile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, profile };
+module.exports = { register, login, profile, getAll };
