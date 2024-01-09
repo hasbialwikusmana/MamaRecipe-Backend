@@ -7,9 +7,14 @@
 --   phone VARCHAR(255) NOT NULL,
 --   password VARCHAR(255) NOT NULL,
 --   image VARCHAR(255),
---   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
+
+npx sequelize-cli model:generate --name User --attributes name:STRING,email:STRING,phone:STRING,password:STRING,image:STRING
+
+
+npx sequelize-cli db:migrate
 
 -- INSERT INTO users (name, email, phone, password, image) VALUES
 
@@ -22,8 +27,8 @@
 --   ingredients TEXT NOT NULL,
 --   image VARCHAR(255),
 --   video VARCHAR(255),
---   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
 -- INSERT INTO recipes (user_id, title, ingredients, image, video) VALUES
@@ -35,8 +40,8 @@
 --   user_id INT NOT NULL,
 --   recipe_id INT NOT NULL,
 --   comment TEXT NOT NULL,
---   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
 -- INSERT INTO comments (user_id, recipe_id, comment) VALUES
@@ -47,8 +52,8 @@
 --   id SERIAL PRIMARY KEY,
 --   user_id INT NOT NULL,
 --   recipe_id INT NOT NULL,
---   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
 -- INSERT INTO likes (user_id, recipe_id) VALUES
@@ -59,8 +64,8 @@
 --   id SERIAL PRIMARY KEY,
 --   user_id INT NOT NULL,
 --   recipe_id INT NOT NULL,
---   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
 -- INSERT INTO favorites (user_id, recipe_id) VALUES
