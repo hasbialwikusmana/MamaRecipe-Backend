@@ -1,6 +1,10 @@
 const response = (res, result, status, message, pagination) => {
   const resultPrint = {};
-  resultPrint.status = "success";
+  if (status === 200 || status === 201) {
+    resultPrint.status = "success";
+  } else {
+    resultPrint.status = "failed";
+  }
   resultPrint.statusCode = status;
   resultPrint.data = result;
   resultPrint.message = message || null;
