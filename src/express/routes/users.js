@@ -13,7 +13,7 @@ router.get("/profile", protect, usersController.profile);
 // // update profile
 router.put("/profile/:id", protect, usersController.updateProfile);
 // // update image
-router.put("/profile/:id/image", upload, usersController.updateImage);
+router.put("/profile/:id/image", protect, upload, usersController.updateImage);
 // // update password
 // router.put("/profile/:id/password", usersController.updatePassword);
 // // delete profile

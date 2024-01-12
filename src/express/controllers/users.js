@@ -45,13 +45,12 @@ const getAll = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const result = await models.user.findOne({ where: { id: id } });
+    const result = await models.user.findByPk(id, { attributes: { exclude: ["password"] } });
 
     if (!result) {
       return commonHelpers.response(res, null, 400, "User not found");
     }
 
-    delete result.dataValues.password;
     commonHelpers.response(res, result, 200, null);
   } catch (error) {
     console.log(error);
@@ -140,9 +139,17 @@ const login = async (req, res, next) => {
 
     delete users.dataValues.password;
 
+    // Validasi UUID sebelum menghasilkan token
+    const userIdSchema = Joi.string().guid({ version: "uuidv4" }).required();
+    const userIdValidationResult = userIdSchema.validate(users.id);
+
+    if (userIdValidationResult.error) {
+      return commonHelpers.response(res, null, 400, "Invalid user ID format");
+    }
+
     const payload = {
-      id: users.dataValues.id,
-      email: users.dataValues.email,
+      id: users.id,
+      email: users.email,
     };
 
     users.dataValues.token = authHelpers.generateToken(payload);
@@ -188,7 +195,7 @@ const updateProfile = async (req, res, next) => {
     }
 
     // cek id params jika tidak ada maka error not found
-    const users = await models.user.findByPk(id);
+    const users = await models.user.findOne({ where: { id: id } });
     if (!users) {
       return commonHelpers.response(res, null, 400, "User not found");
     }
@@ -219,44 +226,37 @@ const updateProfile = async (req, res, next) => {
 const updateImage = async (req, res, next) => {
   try {
     const id = req.params.id;
-    // const schema = Joi.object({
-    //   image: Joi.string().empty("").required(),
-    // });
 
-    // const { error } = schema.validate(req.body);
+    if (!req.file) {
+      return commonHelpers.response(res, null, 400, "Image is required");
+    }
+    const result = await cloudinary.uploader.upload(req.file.path);
+    const image = result.secure_url;
 
-    // if (error) {
-    //   return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-    // }
-
-    // Cek ID params, jika tidak ada maka respons dengan "User not found"
-    const user = await models.user.findByPk(id);
-    if (!user) {
+    const users = await models.user.findOne({ where: { id: id } });
+    if (!users) {
       return commonHelpers.response(res, null, 400, "User not found");
     }
 
-    // Upload gambar ke Cloudinary
-    const cloudinaryResponse = await cloudinary.uploader.upload(req.body.image);
+    const data = {
+      id: id,
+      image: image,
+      updatedAt: users.updatedAt,
+    };
 
-    // Update data user dari null gambar ke Cloudinary
+    if (users.image !== null) {
+      const public_id = users.image.split("/").pop().split(".").shift();
+      await cloudinary.uploader.destroy(public_id);
+    }
 
-    const result = await models.user.update({ image: cloudinaryResponse.secure_url }, { where: { id: id } });
-
-    // Cek jika update gagal, respons dengan "Failed to update user"
-    if (!result) {
+    const update = await models.user.update(data, { where: { id: id } });
+    if (!update) {
       return commonHelpers.response(res, null, 400, "Failed to update user");
     }
 
-    // Ambil data user yang sudah diupdate
-    const data = {
-      id: id,
-      image: cloudinaryResponse.secure_url,
-      updatedAt: result[1][0].updatedAt, // Mengambil tanggal dan waktu terakhir diupdate
-    };
-
     commonHelpers.response(res, data, 200, null);
   } catch (error) {
-    console.error(error);
+    console.log(error);
     next(errorServer);
   }
 };
