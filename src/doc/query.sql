@@ -11,7 +11,7 @@
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
-npx sequelize-cli model:generate --name Users --attributes name:STRING,email:STRING,phone:STRING,password:STRING,image:STRING
+npx sequelize-cli model:generate --name user --attributes name:STRING,email:STRING,phone:STRING,password:STRING,image:STRING
 
 
 npx sequelize-cli db:migrate
@@ -20,7 +20,7 @@ npx sequelize-cli db:migrate
 
 -- RECIPES
 
--- CREATE TABLE recipes (
+-- CREATE TABLE recipe (
 --   id SERIAL PRIMARY KEY,
 --   user_id INT NOT NULL,
 --   title VARCHAR(255) NOT NULL,
@@ -30,6 +30,12 @@ npx sequelize-cli db:migrate
 --   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
+
+npx sequelize-cli model:generate --name recipe --attributes user_id:INTEGER,title:STRING,ingredients:TEXT,image:STRING,video:STRING
+
+npx sequelize-cli db:migrate
+
+npx sequelize-cli seed:generate --name default-recipe 
 
 -- INSERT INTO recipes (user_id, title, ingredients, image, video) VALUES
 
@@ -44,11 +50,14 @@ npx sequelize-cli db:migrate
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
+npx sequelize-cli model:generate --name comment --attributes user_id:INTEGER,recipe_id:INTEGER,comment:TEXT
+
+npx sequelize-cli db:migrate
 -- INSERT INTO comments (user_id, recipe_id, comment) VALUES
 
--- LIKES
+-- liked
 
--- CREATE TABLE likes (
+-- CREATE TABLE liked (
 --   id SERIAL PRIMARY KEY,
 --   user_id INT NOT NULL,
 --   recipe_id INT NOT NULL,
@@ -56,11 +65,15 @@ npx sequelize-cli db:migrate
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
--- INSERT INTO likes (user_id, recipe_id) VALUES
+npx sequelize-cli model:generate --name like --attributes user_id:INTEGER,recipe_id:INTEGER
 
--- FAVORITES
+npx sequelize-cli db:migrate
 
--- CREATE TABLE favorites (
+-- INSERT INTO liked (user_id, recipe_id) VALUES
+
+-- saved
+
+-- CREATE TABLE saved (
 --   id SERIAL PRIMARY KEY,
 --   user_id INT NOT NULL,
 --   recipe_id INT NOT NULL,
@@ -68,6 +81,11 @@ npx sequelize-cli db:migrate
 --   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
--- INSERT INTO favorites (user_id, recipe_id) VALUES
+npx sequelize-cli model:generate --name favorite --attributes user_id:INTEGER,recipe_id:INTEGER
+
+npx sequelize-cli db:migrate
+
+
+-- INSERT INTO saved (user_id, recipe_id) VALUES
 
 
