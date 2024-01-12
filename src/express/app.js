@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 const compression = require("compression");
 const cors = require("cors");
 const xss = require("xss-clean");
@@ -9,11 +10,11 @@ const routes = require("./routes");
 const app = express();
 
 app.use(bodyParser.json());
+app.use(morgan("dev"));
 app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(xss());
-app.use(express.static("doc"));
 app.use("/", routes);
 
 app.all("*", (req, res, next) => {
