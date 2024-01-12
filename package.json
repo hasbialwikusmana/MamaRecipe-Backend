@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "dev": "nodemon index.js",
-    "lint": "eslint --fix --ext .js,.jsx ."
+    "lint": "eslint --fix --ext .js,.jsx .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate:up": "npx sequelize-cli db:migrate",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all"
   },
   "repository": "https://github.com/hasbialwikusmana/MamaRecipe-Backend.git",
   "author": "Hasbi Alwi Kusmana <hasbialwi70@gmail.com>",
