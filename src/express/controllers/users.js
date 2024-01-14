@@ -39,6 +39,7 @@ const getAll = async (req, res, next) => {
     commonHelpers.response(res, result.rows, 200, null, pagination);
   } catch (error) {
     console.log(error);
+    next(errorServer);
   }
 };
 
@@ -54,6 +55,7 @@ const getUserById = async (req, res, next) => {
     commonHelpers.response(res, result, 200, null);
   } catch (error) {
     console.log(error);
+    next(errorServer);
   }
 };
 
@@ -148,7 +150,7 @@ const login = async (req, res, next) => {
     }
 
     const payload = {
-      id: users.id,
+      id: users.id, // Pastikan id yang digunakan adalah id dari hasil query
       email: users.email,
     };
 
@@ -162,17 +164,24 @@ const login = async (req, res, next) => {
   }
 };
 
-const profile = async (req, res, next) => {
-  // payload dari token
-
+const getProfile = async (req, res, next) => {
   try {
-    const id = req.payload.id;
-    const result = await models.user.findByPk(id, { attributes: { exclude: ["password"] } });
+    const userId = req.payload.id;
+
+    // Validasi userId menggunakan Joi
+    const userIdSchema = Joi.string().guid({ version: "uuidv4" }).required();
+    const { error } = userIdSchema.validate(userId);
+
+    if (error) {
+      return commonHelpers.response(res, null, 400, "Invalid user ID format");
+    }
+
+    const result = await models.user.findByPk(userId, { attributes: { exclude: ["password"] } });
+
     if (!result) {
       return commonHelpers.response(res, null, 400, "User not found");
     }
 
-    delete result.dataValues.password;
     commonHelpers.response(res, result, 200, null);
   } catch (error) {
     console.log(error);
@@ -194,12 +203,6 @@ const updateProfile = async (req, res, next) => {
       return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
     }
 
-    // cek id params jika tidak ada maka error not found
-    const users = await models.user.findOne({ where: { id: id } });
-    if (!users) {
-      return commonHelpers.response(res, null, 400, "User not found");
-    }
-
     // update data req.body
     const result = await models.user.update(req.body, { where: { id: id } });
 
@@ -208,13 +211,7 @@ const updateProfile = async (req, res, next) => {
       return commonHelpers.response(res, null, 400, "Failed to update user");
     }
 
-    // ambil data user yang sudah diupdate
-    const data = {
-      id: id,
-      name: users.name,
-      phone: users.phone,
-      updatedAt: users.updatedAt,
-    };
+    const data = await models.user.findByPk(id, { attributes: { exclude: ["password"] } });
 
     commonHelpers.response(res, data, 200, null);
   } catch (error) {
@@ -261,4 +258,82 @@ const updateImage = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, profile, getAll, getUserById, updateProfile, updateImage };
+const updatePassword = async (req, res, next) => {
+  // UPDATE PASSWORD OLD DAN NEW
+  try {
+    const id = req.params.id;
+    const schema = Joi.object({
+      oldPassword: Joi.string().min(8).empty("").required(),
+      newPassword: Joi.string().min(8).empty("").required(),
+      confirmNewPassword: Joi.any().valid(Joi.ref("newPassword")).required().messages({
+        "any.only": "Confirm password must match password",
+      }),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
+
+    const users = await models.user.findOne({ where: { id: id } });
+    if (!users) {
+      return commonHelpers.response(res, null, 400, "User not found");
+    }
+
+    const checkPassword = await bcrypt.compare(req.body.oldPassword, users.password);
+    if (!checkPassword) {
+      return commonHelpers.response(res, null, 400, "Password is wrong");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(req.body.newPassword, salt);
+
+    const data = {
+      id: id,
+      password: hashPassword,
+      updatedAt: users.updatedAt,
+    };
+
+    const update = await models.user.update(data, { where: { id: id } });
+    if (!update) {
+      return commonHelpers.response(res, null, 400, "Failed to update user");
+    }
+
+    commonHelpers.response(res, data, 200, null);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+// DELETE PROFILE DAN DELETE IMAGE
+
+const deleteProfile = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const users = await models.user.findOne({ where: { id: id } });
+    if (!users) {
+      return commonHelpers.response(res, null, 400, "User not found");
+    }
+
+    if (users.image !== null) {
+      const public_id = users.image.split("/").pop().split(".").shift();
+      await cloudinary.uploader.destroy(public_id);
+    }
+
+    const result = await models.user.destroy({ where: { id: id } });
+
+    if (!result) {
+      return commonHelpers.response(res, null, 400, "Failed to delete user");
+    }
+
+    commonHelpers.response(res, null, 200, null);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+module.exports = { register, login, getProfile, getAll, getUserById, updateProfile, updateImage, updatePassword, deleteProfile };
