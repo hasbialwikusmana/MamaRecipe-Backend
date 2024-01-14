@@ -167,7 +167,7 @@ const profile = async (req, res, next) => {
 
   try {
     const id = req.payload.id;
-    const result = await models.user.findOne({ where: { id: id } });
+    const result = await models.user.findByPk(id, { attributes: { exclude: ["password"] } });
     if (!result) {
       return commonHelpers.response(res, null, 400, "User not found");
     }
