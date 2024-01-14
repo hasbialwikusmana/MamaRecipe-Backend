@@ -1,18 +1,28 @@
 const jwt = require("jsonwebtoken");
 
 const generateToken = (payload) => {
-  const verifyOpts = {
-    expiresIn: "1d",
-    issuer: "mamarecipe_backend",
-  };
-  const token = jwt.sign(payload, process.env.SECRET_KEY_JWT, verifyOpts);
-  return token;
+  try {
+    const verifyOpts = {
+      expiresIn: "1d",
+      issuer: "mamarecipe_backend",
+    };
+    const token = jwt.sign(payload, process.env.SECRET_KEY_JWT, verifyOpts);
+    return token;
+  } catch (error) {
+    console.error("Error generating token:", error);
+    throw error;
+  }
 };
 
 const generateRefreshToken = (payload) => {
-  const verifyOpts = { expiresIn: "1 day" };
-  const token = jwt.sign(payload, process.env.SECRET_KEY_JWT, verifyOpts);
-  return token;
+  try {
+    const verifyOpts = { expiresIn: "1 day" };
+    const token = jwt.sign(payload, process.env.SECRET_KEY_JWT, verifyOpts);
+    return token;
+  } catch (error) {
+    console.error("Error generating refresh token:", error);
+    throw error;
+  }
 };
 
 module.exports = { generateToken, generateRefreshToken };
