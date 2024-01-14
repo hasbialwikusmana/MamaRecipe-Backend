@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
 const createError = require("http-errors");
+
 const protect = (req, res, next) => {
   try {
     let token;
+
     if (req.headers.authorization) {
       token = req.headers.authorization.split(" ")[1];
-      let decoded = jwt.verify(token, process.env.SECRET_KEY_JWT);
+      const decoded = jwt.verify(token, process.env.SECRET_KEY_JWT);
       req.payload = decoded;
 
       next();
@@ -15,13 +17,14 @@ const protect = (req, res, next) => {
       });
     }
   } catch (error) {
-    console.log(error);
-    if (error && error.name === "JsonWebTokenError") {
-      next(new createError(400, "Token invalid"));
-    } else if (error && error.name === "TokenExpiredError") {
-      next(new createError(400, "Token expired"));
+    console.error(error);
+
+    if (error.name === "JsonWebTokenError") {
+      next(new createError(400, "Invalid token"));
+    } else if (error.name === "TokenExpiredError") {
+      next(new createError(400, "Expired token"));
     } else {
-      next(new createError(400, "Token not active"));
+      next(new createError(400, "Token is not valid"));
     }
   }
 };
