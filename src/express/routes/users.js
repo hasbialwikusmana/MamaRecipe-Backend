@@ -8,15 +8,15 @@ router.get("/", usersController.getAll);
 router.get("/:id", usersController.getUserById);
 router.post("/register", usersController.register);
 router.post("/login", usersController.login);
-router.get("/profile", protect, usersController.profile);
+router.get("/profile", protect, usersController.getProfile);
 
 // // update profile
 router.put("/profile/:id", protect, usersController.updateProfile);
 // // update image
 router.put("/profile/:id/image", protect, upload, usersController.updateImage);
 // // update password
-// router.put("/profile/:id/password", usersController.updatePassword);
+router.put("/profile/:id/password", usersController.updatePassword);
 // // delete profile
-// router.delete("/profile/:id", usersController.deleteProfile);
+router.delete("/profile/:id", usersController.deleteProfile);
 
 module.exports = router;
