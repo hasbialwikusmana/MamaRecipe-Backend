@@ -6,7 +6,12 @@ const createError = require("http-errors");
 const cloudinary = require("../middlewares/cloudinary");
 const errorServer = new createError.InternalServerError();
 
-// BUATKAN DENGAN ORM SEQUELIZE
+const recipeSchema = Joi.object({
+  title: Joi.string().required(),
+  ingredients: Joi.string().required(),
+  image: Joi.string().required(),
+  video: Joi.string().required(),
+});
 
 const getAll = async (req, res, next) => {
   try {
@@ -16,12 +21,20 @@ const getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || "createdAt";
     const order = req.query.order || "DESC";
+    const userId = req.payload.id;
 
     const result = await models.recipe.findAndCountAll({
       where: {
+        user_id: userId,
         [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
       },
-      attributes: { exclude: ["password"] },
+      attributes: {
+        exclude: ["password"],
+        include: [
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
+        ],
+      },
       order: [[sortBy, order]],
       limit: limit,
       offset: offset,
@@ -60,6 +73,11 @@ const createRecipe = async (req, res, next) => {
     const user_id = req.payload.id;
     const data = req.body;
 
+    const { error } = recipeSchema.validate(data);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
+
     data.id = uuidv4();
     data.user_id = user_id;
 
@@ -95,6 +113,11 @@ const updateRecipe = async (req, res, next) => {
     const user_id = req.payload.id;
     const newData = req.body;
 
+    const { error } = recipeSchema.validate(newData);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
+
     const oldDataResult = await models.recipe.findByPk(id);
     if (!oldDataResult) {
       return commonHelpers.response(res, null, 404, "Recipe not found");
@@ -107,25 +130,20 @@ const updateRecipe = async (req, res, next) => {
     data.user_id = user_id;
 
     if (req.file) {
-      // Handle Cloudinary image deletion only if it exists
       if (oldData.image) {
         const public_id = oldData.image.split("/").pop().split(".").shift();
         await cloudinary.uploader.destroy(public_id);
       }
 
-      // Upload new image to Cloudinary
       const upload = await cloudinary.uploader.upload(req.file.path);
       data.image = upload.secure_url;
       data.video = upload.url;
     }
-
-    // Perform the update with the new data
     const result = await models.recipe.update(data, { where: { id: id } });
     if (!result) {
       return commonHelpers.response(res, null, 400, "Failed to update recipe");
     }
 
-    // Prepare the response object
     const response = {
       id: data.id,
       user_id: data.user_id,
@@ -153,7 +171,6 @@ const deleteRecipe = async (req, res, next) => {
       return commonHelpers.response(res, null, 404, "Recipe not found");
     }
 
-    // Handle Cloudinary image deletion only if it exists
     if (oldResult.image) {
       const public_id = oldResult.image.split("/").pop().split(".").shift();
       await cloudinary.uploader.destroy(public_id);
