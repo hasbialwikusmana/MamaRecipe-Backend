@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const recipesController = require("../controllers/recipes");
-const likedController = require("../controllers/liked");
-const savedController = require("../controllers/saved");
+const likedController = require("../controllers/likes");
+const savedController = require("../controllers/saves");
 const commentsController = require("../controllers/comments");
 
 const protect = require("../middlewares/auth");

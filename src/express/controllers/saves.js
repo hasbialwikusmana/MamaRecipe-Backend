@@ -5,7 +5,9 @@ const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
-// BUATKAN DENGAN ORM SEQUELIZE
+const saveSchema = Joi.object({
+  recipe_id: Joi.string().uuid().required(),
+});
 
 const getAll = async (req, res, next) => {
   try {
@@ -14,8 +16,16 @@ const getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || "createdAt";
     const order = req.query.order || "DESC";
+    const userId = req.payload.id;
 
     const result = await models.save.findAndCountAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: models.recipe,
+          attributes: ["title", "image"],
+        },
+      ],
       order: [[sortBy, order]],
       limit: limit,
       offset: offset,
@@ -52,35 +62,34 @@ const getSavedById = async (req, res, next) => {
 const createSaved = async (req, res, next) => {
   try {
     const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
 
-    const data = req.body;
-
-    data.id = uuidv4();
-    data.user_id = user_id;
-    data.recipe_id = recipe_id;
-
-    const result = await models.save.create(data);
-
-    const response = {
-      id: result.id,
-      user_id: result.user_id,
-      recipe_id: result.recipe_id,
-    };
-
-    commonHelpers.response(res, response, 201, null);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const deleteSaved = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const result = await models.save.destroy({ where: { id } });
-    if (!result) {
-      commonHelpers.response(res, null, 404, "Save not found");
+    const { error } = saveSchema.validate({ recipe_id });
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
     }
-    commonHelpers.response(res, result, 200, "Save deleted");
+
+    const existingSave = await models.save.findOne({
+      where: { user_id, recipe_id },
+    });
+
+    if (existingSave) {
+      await models.save.destroy({ where: { user_id, recipe_id } });
+      commonHelpers.response(res, null, 200, "Recipe unsaved successfully");
+    } else {
+      const data = { id: uuidv4(), user_id, recipe_id };
+      const result = await models.save.create(data);
+
+      const response = {
+        id: result.id,
+        user_id: result.user_id,
+        recipe_id: result.recipe_id,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+      };
+
+      commonHelpers.response(res, response, 201, "Recipe saved successfully");
+    }
   } catch (error) {
     next(error);
   }
@@ -90,5 +99,4 @@ module.exports = {
   getAll,
   getSavedById,
   createSaved,
-  deleteSaved,
 };

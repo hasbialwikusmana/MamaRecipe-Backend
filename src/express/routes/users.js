@@ -4,19 +4,22 @@ const usersController = require("../controllers/users");
 const protect = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
 
-router.get("/", usersController.getAll);
-router.get("/:id", usersController.getUserById);
-router.post("/register", usersController.register);
-router.post("/login", usersController.login);
-router.get("/profile", protect, usersController.getProfile);
+// get all users
+router.get("/users", protect, usersController.getAll);
+router.get("/users/profile", protect, usersController.getProfile);
+router.get("/users/:id", protect, usersController.getUserById);
+
+// // register & login
+router.post("/auth/register", usersController.register);
+router.post("/auth/login", usersController.login);
 
 // // update profile
-router.put("/profile/:id", protect, usersController.updateProfile);
+router.put("/users/profile/:id", protect, usersController.updateProfile);
 // // update image
-router.put("/profile/:id/image", protect, upload, usersController.updateImage);
+router.put("/users/profile/:id/image", protect, upload, usersController.updateImage);
 // // update password
-router.put("/profile/:id/password", usersController.updatePassword);
+router.put("/users/profile/:id/password", protect, usersController.updatePassword);
 // // delete profile
-router.delete("/profile/:id", usersController.deleteProfile);
+router.delete("/users/profile/:id", protect, usersController.deleteProfile);
 
 module.exports = router;

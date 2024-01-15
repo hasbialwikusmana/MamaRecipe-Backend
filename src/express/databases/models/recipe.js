@@ -7,7 +7,19 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {}
+    static associate(models) {
+      recipe.hasMany(models.like, {
+        foreignKey: "recipe_id",
+        as: "likes",
+        onDelete: "CASCADE",
+      });
+
+      recipe.hasMany(models.save, {
+        foreignKey: "recipe_id",
+        as: "saves",
+        onDelete: "CASCADE",
+      });
+    }
   }
   recipe.init(
     {
@@ -37,6 +49,14 @@ module.exports = (sequelize, DataTypes) => {
       video: {
         type: DataTypes.STRING,
         allowNull: true,
+      },
+      likeCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      saveCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
     },
     {

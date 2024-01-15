@@ -8,7 +8,6 @@ const createError = require("http-errors");
 const cloudinary = require("../middlewares/cloudinary");
 const errorServer = new createError.InternalServerError();
 
-// BUATKAN DENGAN ORM SEQUELIZE
 const getAll = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -140,17 +139,8 @@ const login = async (req, res, next) => {
     }
 
     delete users.dataValues.password;
-
-    // Validasi UUID sebelum menghasilkan token
-    const userIdSchema = Joi.string().guid({ version: "uuidv4" }).required();
-    const userIdValidationResult = userIdSchema.validate(users.id);
-
-    if (userIdValidationResult.error) {
-      return commonHelpers.response(res, null, 400, "Invalid user ID format");
-    }
-
     const payload = {
-      id: users.id, // Pastikan id yang digunakan adalah id dari hasil query
+      id: users.id,
       email: users.email,
     };
 
@@ -167,16 +157,9 @@ const login = async (req, res, next) => {
 const getProfile = async (req, res, next) => {
   try {
     const userId = req.payload.id;
-
-    // Validasi userId menggunakan Joi
-    const userIdSchema = Joi.string().guid({ version: "uuidv4" }).required();
-    const { error } = userIdSchema.validate(userId);
-
-    if (error) {
-      return commonHelpers.response(res, null, 400, "Invalid user ID format");
-    }
-
-    const result = await models.user.findByPk(userId, { attributes: { exclude: ["password"] } });
+    const result = await models.user.findByPk(userId, {
+      attributes: { exclude: ["password"] },
+    });
 
     if (!result) {
       return commonHelpers.response(res, null, 400, "User not found");
@@ -203,10 +186,8 @@ const updateProfile = async (req, res, next) => {
       return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
     }
 
-    // update data req.body
     const result = await models.user.update(req.body, { where: { id: id } });
 
-    // cek jika result tidak ada maka error
     if (!result) {
       return commonHelpers.response(res, null, 400, "Failed to update user");
     }
@@ -259,7 +240,6 @@ const updateImage = async (req, res, next) => {
 };
 
 const updatePassword = async (req, res, next) => {
-  // UPDATE PASSWORD OLD DAN NEW
   try {
     const id = req.params.id;
     const schema = Joi.object({
@@ -306,8 +286,6 @@ const updatePassword = async (req, res, next) => {
     next(errorServer);
   }
 };
-
-// DELETE PROFILE DAN DELETE IMAGE
 
 const deleteProfile = async (req, res, next) => {
   try {
