@@ -9,11 +9,49 @@ const errorServer = new createError.InternalServerError();
 const recipeSchema = Joi.object({
   title: Joi.string().required(),
   ingredients: Joi.string().required(),
-  image: Joi.string().required(),
   video: Joi.string().required(),
 });
 
 const getAll = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const offset = (page - 1) * limit;
+    const sortBy = req.query.sortBy || "createdAt";
+    const order = req.query.order || "DESC";
+
+    const result = await models.recipe.findAndCountAll({
+      where: {
+        [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
+      },
+      attributes: {
+        include: [
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
+        ],
+      },
+      order: [[sortBy, order]],
+      limit: limit,
+      offset: offset,
+    });
+
+    const totalPage = Math.ceil(result.count / limit);
+    const pagination = {
+      page,
+      totalPage,
+      limit,
+      totalData: result.count,
+    };
+
+    commonHelpers.response(res, result.rows, 200, null, pagination);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+const getAllMyRecipe = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -36,6 +74,69 @@ const getAll = async (req, res, next) => {
         ],
       },
       order: [[sortBy, order]],
+      limit: limit,
+      offset: offset,
+    });
+
+    const totalPage = Math.ceil(result.count / limit);
+    const pagination = {
+      page,
+      totalPage,
+      limit,
+      totalData: result.count,
+    };
+
+    commonHelpers.response(res, result.rows, 200, null, pagination);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+const getNewRecipes = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || "";
+
+    const result = await models.recipe.findAndCountAll({
+      where: {
+        [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
+      },
+      order: [["createdAt", "DESC"]],
+      limit: limit,
+      offset: offset,
+    });
+
+    const totalPage = Math.ceil(result.count / limit);
+    const pagination = {
+      page,
+      totalPage,
+      limit,
+      totalData: result.count,
+    };
+
+    commonHelpers.response(res, result.rows, 200, null, pagination);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+const getPopularRecipes = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const search = req.query.search || "";
+    const offset = (page - 1) * limit;
+
+    const result = await models.recipe.findAndCountAll({
+      where: {
+        [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
+      },
+
+      order: [["saveCount", "DESC"]],
       limit: limit,
       offset: offset,
     });
@@ -137,7 +238,6 @@ const updateRecipe = async (req, res, next) => {
 
       const upload = await cloudinary.uploader.upload(req.file.path);
       data.image = upload.secure_url;
-      data.video = upload.url;
     }
     const result = await models.recipe.update(data, { where: { id: id } });
     if (!result) {
@@ -190,6 +290,9 @@ const deleteRecipe = async (req, res, next) => {
 
 module.exports = {
   getAll,
+  getAllMyRecipe,
+  getNewRecipes,
+  getPopularRecipes,
   getRecipeById,
   createRecipe,
   updateRecipe,
