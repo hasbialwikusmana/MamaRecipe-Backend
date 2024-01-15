@@ -5,7 +5,9 @@ const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
-// BUATKAN DENGAN ORM SEQUELIZE
+const commentSchema = Joi.object({
+  comment: Joi.string().required(),
+});
 
 const getAll = async (req, res, next) => {
   try {
@@ -15,11 +17,14 @@ const getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || "createdAt";
     const order = req.query.order || "DESC";
+    const recipe_id = req.params.recipe_id;
 
     const result = await models.comment.findAndCountAll({
       where: {
+        recipe_id: recipe_id,
         [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("comment") LIKE LOWER('%${search}%')`)],
       },
+
       attributes: { exclude: ["password"] },
       order: [[sortBy, order]],
       limit: limit,
@@ -44,10 +49,17 @@ const getAll = async (req, res, next) => {
 const getCommentById = async (req, res, next) => {
   try {
     const id = req.params.id;
+    const userId = req.payload.id;
     const result = await models.comment.findByPk(id);
+
     if (!result) {
-      commonHelpers.response(res, null, 404, "Comment not found");
+      return commonHelpers.response(res, null, 404, "Comment not found");
     }
+
+    if (result.user_id !== userId) {
+      return commonHelpers.response(res, null, 403, "Forbidden - You do not have permission to access this comment");
+    }
+
     commonHelpers.response(res, result, 200);
   } catch (error) {
     next(error);
@@ -62,6 +74,11 @@ const createComment = async (req, res, next) => {
     data.id = uuidv4();
     data.user_id = user_id;
     data.recipe_id = req.params.recipe_id;
+
+    const { error } = commentSchema.validate(data);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
 
     const result = await models.comment.create(data);
     if (!result) {
@@ -91,6 +108,11 @@ const updateComment = async (req, res, next) => {
     const checkComment = await models.comment.findByPk(id);
     if (!checkComment) {
       return commonHelpers.response(res, null, 404, "Comment not found");
+    }
+
+    const { error } = commentSchema.validate(data);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
     }
 
     const result = await models.comment.update(data, { where: { id } });

@@ -3,9 +3,8 @@ const router = express.Router();
 const commentsController = require("../controllers/comments");
 const protect = require("../middlewares/auth");
 
-router.get("/", commentsController.getAll);
-router.get("/:id", commentsController.getCommentById);
-router.post("/", protect, commentsController.createComment);
+router.get("/", protect, commentsController.getAll);
+router.get("/:id", protect, commentsController.getCommentById);
 router.put("/:id", protect, commentsController.updateComment);
 router.delete("/:id", protect, commentsController.deleteComment);
 
