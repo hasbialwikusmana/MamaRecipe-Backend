@@ -17,11 +17,9 @@ const getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || "createdAt";
     const order = req.query.order || "DESC";
-    const recipe_id = req.params.recipe_id;
 
     const result = await models.comment.findAndCountAll({
       where: {
-        recipe_id: recipe_id,
         [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("comment") LIKE LOWER('%${search}%')`)],
       },
 
