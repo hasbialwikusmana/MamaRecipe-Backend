@@ -1,13 +1,8 @@
 const { v4: uuidv4 } = require("uuid");
-const Joi = require("joi");
 const commonHelpers = require("../helpers/common");
 const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
-
-const likeSchema = Joi.object({
-  recipe_id: Joi.string().uuid().required(),
-});
 
 const getAll = async (req, res, next) => {
   try {
@@ -71,20 +66,16 @@ const createLiked = async (req, res, next) => {
     const user_id = req.payload.id;
     const recipe_id = req.params.recipe_id;
 
+    // Check if the user has already liked the recipe
     const existingLike = await models.like.findOne({
       where: { user_id, recipe_id },
     });
 
     if (existingLike) {
       await models.like.destroy({ where: { user_id, recipe_id } });
-      commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
     } else {
       const data = { id: uuidv4(), user_id, recipe_id };
-
-      const { error } = likeSchema.validate(data);
-      if (error) {
-        return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-      }
 
       const result = await models.like.create(data);
 
