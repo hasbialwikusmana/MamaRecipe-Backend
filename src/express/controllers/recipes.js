@@ -104,6 +104,9 @@ const getNewRecipes = async (req, res, next) => {
       where: {
         [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
       },
+      attributes: {
+        exclude: ["likeCount", "saveCount"],
+      },
       order: [["createdAt", "DESC"]],
       limit: limit,
       offset: offset,
@@ -128,15 +131,18 @@ const getPopularRecipes = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
-    const search = req.query.search || "";
     const offset = (page - 1) * limit;
 
     const result = await models.recipe.findAndCountAll({
-      where: {
-        [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("title") LIKE LOWER('%${search}%')`)],
+      attributes: {
+        include: [
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
+        ],
       },
 
-      order: [["saveCount", "DESC"]],
+      order: [[models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "DESC"]],
+
       limit: limit,
       offset: offset,
     });
