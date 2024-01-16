@@ -5,6 +5,10 @@ const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
+const commentSchema = Joi.object({
+  comment: Joi.string().required(),
+});
+
 const getAll = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -71,7 +75,6 @@ const createComment = async (req, res, next) => {
     if (error) {
       return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
     }
-
     data.id = uuidv4();
     data.user_id = user_id;
     data.recipe_id = req.params.recipe_id;
