@@ -13,6 +13,8 @@ router.get("/users/:id", protect, usersController.getUserById);
 router.post("/auth/register", usersController.register);
 router.post("/auth/login", usersController.login);
 
+// // refresh token
+router.post("/auth/refresh-token", usersController.refreshToken);
 // // update profile
 router.put("/users/profile/:id", protect, usersController.updateProfile);
 // // update image

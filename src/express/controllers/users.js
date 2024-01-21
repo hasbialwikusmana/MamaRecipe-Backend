@@ -154,6 +154,20 @@ const login = async (req, res, next) => {
   }
 };
 
+const refreshToken = (req, res) => {
+  const refreshToken = req.body.refreshToken;
+  const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY_JWT);
+  let payload = {
+    email: decoded.email,
+    id: decoded.id,
+  };
+  const result = {
+    token: authHelpers.generateToken(payload),
+    refreshToken: authHelpers.generateRefreshToken(payload),
+  };
+  commonHelpers.response(res, result, 200);
+};
+
 const getProfile = async (req, res, next) => {
   try {
     const userId = req.payload.id;
@@ -314,4 +328,4 @@ const deleteProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getProfile, getAll, getUserById, updateProfile, updateImage, updatePassword, deleteProfile };
+module.exports = { register, login, refreshToken, getProfile, getAll, getUserById, updateProfile, updateImage, updatePassword, deleteProfile };
