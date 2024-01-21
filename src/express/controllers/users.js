@@ -139,33 +139,40 @@ const login = async (req, res, next) => {
     }
 
     delete users.dataValues.password;
-    const payload = {
-      id: users.id,
-      email: users.email,
-    };
 
-    users.dataValues.token = authHelpers.generateToken(payload);
-    users.dataValues.refreshToken = authHelpers.generateRefreshToken(payload);
+    const token = authHelpers.generateToken({ id: users.id, email: users.email });
+    const refreshToken = authHelpers.generateRefreshToken({ id: users.id, email: users.email });
 
-    commonHelpers.response(res, users, 200, null);
+    commonHelpers.response(res, { users, token, refreshToken }, 200, null);
   } catch (error) {
     console.log(error);
     next(errorServer);
   }
 };
 
-const refreshToken = (req, res) => {
-  const refreshToken = req.body.refreshToken;
-  const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY_JWT);
-  let payload = {
-    email: decoded.email,
-    id: decoded.id,
-  };
-  const result = {
-    token: authHelpers.generateToken(payload),
-    refreshToken: authHelpers.generateRefreshToken(payload),
-  };
-  commonHelpers.response(res, result, 200);
+const refreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+
+    if (!refreshToken) {
+      return commonHelpers.response(res, null, 401, "Refresh token is required");
+    }
+    const decoded = authHelpers.verifyRefreshToken(refreshToken);
+
+    const user = await models.user.findByPk(decoded.id, { attributes: { exclude: ["password"] } });
+
+    if (!user) {
+      return commonHelpers.response(res, null, 401, "User not found");
+    }
+
+    const newToken = authHelpers.generateToken({ id: user.id, email: user.email });
+    const newRefreshToken = authHelpers.generateRefreshToken({ id: user.id, email: user.email });
+
+    commonHelpers.response(res, { token: newToken, refreshToken: newRefreshToken }, 200, null);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
 };
 
 const getProfile = async (req, res, next) => {

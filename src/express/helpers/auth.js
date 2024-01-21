@@ -25,4 +25,8 @@ const generateRefreshToken = (payload) => {
   }
 };
 
-module.exports = { generateToken, generateRefreshToken };
+const verifyRefreshToken = (refreshToken) => {
+  return jwt.verify(refreshToken, process.env.SECRET_KEY_JWT);
+};
+
+module.exports = { generateToken, generateRefreshToken, verifyRefreshToken };
