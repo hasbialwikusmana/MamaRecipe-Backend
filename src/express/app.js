@@ -14,7 +14,7 @@ app.use(morgan("dev"));
 app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: process.env.CLIENT_URL_DEV || process.env.CLIENT_URL_PROD,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
