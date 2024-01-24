@@ -13,7 +13,14 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(compression());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(xss());
 app.use("/", routes);
 
