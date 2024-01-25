@@ -8,7 +8,7 @@ const commentsController = require("../controllers/comments");
 const protect = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
 
-router.get("/", recipesController.getAll);
+router.get("/", protect, recipesController.getAll);
 router.get("/myRecipes", protect, recipesController.getAllMyRecipe);
 router.get("/newRecipes", recipesController.getNewRecipes);
 router.get("/popularRecipes", recipesController.getPopularRecipes);
