@@ -31,7 +31,7 @@ const getAll = async (req, res, next) => {
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
         ],
       },
-      order: [[sortBy, models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), order]],
+      order: [[sortBy, order]],
       limit: limit,
       offset: offset,
     });
