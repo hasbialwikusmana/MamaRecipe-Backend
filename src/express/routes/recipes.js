@@ -10,8 +10,9 @@ const upload = require("../middlewares/upload");
 
 router.get("/", protect, recipesController.getAll);
 router.get("/myRecipes", protect, recipesController.getAllMyRecipe);
-router.get("/newRecipes", recipesController.getNewRecipes);
-router.get("/popularRecipes", recipesController.getPopularRecipes);
+router.get("/newRecipes", protect, recipesController.getNewRecipes);
+router.get("/popularRecipes", protect, recipesController.getPopularRecipes);
+router.get("/likedRecipes", protect, recipesController.getLikeRecipes);
 router.get("/:id", protect, recipesController.getRecipeById);
 router.post("/", protect, upload, recipesController.createRecipe);
 router.put("/:id", protect, upload, recipesController.updateRecipe);
