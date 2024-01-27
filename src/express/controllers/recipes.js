@@ -34,6 +34,12 @@ const getAll = async (req, res, next) => {
       order: [[sortBy, order]],
       limit: limit,
       offset: offset,
+      include: [
+        {
+          model: models.user,
+          attributes: ["id", "name", "image"], // Include the fields you need
+        },
+      ],
     });
 
     const totalPage = Math.ceil(result.count / limit);
@@ -76,12 +82,6 @@ const getAllMyRecipe = async (req, res, next) => {
       order: [[sortBy, order]],
       limit: limit,
       offset: offset,
-      include: [
-        {
-          model: models.user,
-          attributes: ["id", "name", "image"], // Include the fields you need
-        },
-      ],
     });
 
     const totalPage = Math.ceil(result.count / limit);
