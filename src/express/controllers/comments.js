@@ -44,36 +44,38 @@ const getAll = async (req, res, next) => {
   }
 };
 
+// GET ALL COMMENT BY RECIPE ID YANG NANTI NYA DI PAKAI DI FRONT END UNTUK MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DAN MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DI HALAMAN RECIPE DETAIL DI FRONT END JUGA DAN MENMPILKAN USER IMAGE DAN NAME DI SETIAP COMMENT
+
 const getAllComments = async (req, res, next) => {
   try {
-    const { recipeId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    // Ambil semua komentar terkait dengan suatu resep
-    const comments = await models.comment.findAll({
+    const result = await models.comment.findAndCountAll({
       where: {
-        recipe_id: recipeId,
+        recipe_id: req.params.recipeId,
       },
-      include: {
-        model: models.user,
-        attributes: ["id", "name", "image"],
-      },
+      include: [
+        {
+          model: models.user,
+          as: "user",
+          attributes: ["id", "name", "image"], // Include the fields you need
+        },
+      ],
     });
 
-    // Kirim respons dengan data komentar dan data user terkait
-    res.status(200).json({
-      data: comments.map((comment) => ({
-        id: comment.id,
-        comment: comment.comment,
-        user: {
-          id: comment.user.id,
-          name: comment.user.name,
-          image: comment.user.image,
-        },
-      })),
-    });
+    const totalPage = Math.ceil(result.count / limit);
+    const pagination = {
+      page,
+      totalPage,
+      limit,
+      totalData: result.count,
+    };
+
+    commonHelpers.response(res, result.rows, 200, null, pagination);
   } catch (error) {
-    console.error(error);
-    next(error);
+    console.log(error);
+    next(errorServer);
   }
 };
 
@@ -99,34 +101,33 @@ const getCommentById = async (req, res, next) => {
 
 const createComment = async (req, res, next) => {
   try {
-    const { recipeId } = req.params;
-    const { comment } = req.body;
-    const userId = req.payload.id;
+    const user_id = req.payload.id;
 
-    // Buat komentar baru di basis data
-    const newComment = await models.comment.create({
-      comment,
-      user_id: userId,
-      recipe_id: recipeId,
-    });
+    const data = req.body;
+    const { error } = commentSchema.validate(data);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
+    data.id = uuidv4();
+    data.user_id = user_id;
+    data.recipe_id = req.params.recipe_id;
 
-    // Ambil data user terkait dengan komentar
-    const user = await models.user.findByPk(userId);
+    const result = await models.comment.create(data);
+    if (!result) {
+      return commonHelpers.response(res, null, 400, "Failed to create comment");
+    }
 
-    // Kirim respons dengan data komentar dan data user terkait
-    res.status(201).json({
-      data: {
-        id: newComment.id,
-        comment: newComment.comment,
-        user: {
-          id: user.id,
-          name: user.name,
-          image: user.image,
-        },
-      },
-    });
+    const response = {
+      id: result.id,
+      user_id: result.user_id,
+      recipe_id: result.recipe_id,
+      comment: result.comment,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
+
+    commonHelpers.response(res, response, 201, null);
   } catch (error) {
-    console.error(error);
     next(error);
   }
 };
