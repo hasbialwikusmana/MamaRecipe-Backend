@@ -140,12 +140,8 @@ const getPopularRecipes = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
-    const userId = req.payload.id;
 
     const result = await models.recipe.findAndCountAll({
-      where: {
-        user_id: userId,
-      },
       attributes: {
         include: [
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
@@ -193,6 +189,44 @@ const getLikeRecipes = async (req, res, next) => {
       },
 
       order: [[models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "DESC"]],
+      limit: limit,
+      offset: offset,
+    });
+
+    const totalPage = Math.ceil(result.count / limit);
+    const pagination = {
+      page,
+      totalPage,
+      limit,
+      totalData: result.count,
+    };
+
+    commonHelpers.response(res, result.rows, 200, null, pagination);
+  } catch (error) {
+    console.log(error);
+    next(errorServer);
+  }
+};
+
+const getSavesRecipes = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
+    const userId = req.payload.id;
+
+    const result = await models.recipe.findAndCountAll({
+      where: {
+        user_id: userId,
+      },
+      attributes: {
+        include: [
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
+        ],
+      },
+
+      order: [[models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "DESC"]],
       limit: limit,
       offset: offset,
     });
@@ -350,6 +384,7 @@ module.exports = {
   getNewRecipes,
   getPopularRecipes,
   getLikeRecipes,
+  getSavesRecipes,
   getRecipeById,
   createRecipe,
   updateRecipe,

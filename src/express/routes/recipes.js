@@ -13,6 +13,7 @@ router.get("/myRecipes", protect, recipesController.getAllMyRecipe);
 router.get("/newRecipes", protect, recipesController.getNewRecipes);
 router.get("/popularRecipes", protect, recipesController.getPopularRecipes);
 router.get("/likedRecipes", protect, recipesController.getLikeRecipes);
+router.get("/savedRecipes", protect, recipesController.getSavesRecipes);
 router.get("/:id", protect, recipesController.getRecipeById);
 router.post("/", protect, upload, recipesController.createRecipe);
 router.put("/:id", protect, upload, recipesController.updateRecipe);
