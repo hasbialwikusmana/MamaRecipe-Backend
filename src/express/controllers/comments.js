@@ -46,11 +46,12 @@ const getAll = async (req, res, next) => {
 
 const getAllComments = async (req, res, next) => {
   try {
-    const { recipe_id } = req.params;
+    const { recipeId } = req.params;
 
+    // Ambil semua komentar terkait dengan suatu resep
     const comments = await models.comment.findAll({
       where: {
-        recipe_id: recipe_id,
+        recipe_id: recipeId,
       },
       include: {
         model: models.user,
@@ -58,10 +59,11 @@ const getAllComments = async (req, res, next) => {
       },
     });
 
+    // Kirim respons dengan data komentar dan data user terkait
     res.status(200).json({
       data: comments.map((comment) => ({
         id: comment.id,
-        text: comment.text,
+        comment: comment.comment,
         user: {
           id: comment.user.id,
           name: comment.user.name,
@@ -97,33 +99,34 @@ const getCommentById = async (req, res, next) => {
 
 const createComment = async (req, res, next) => {
   try {
-    const user_id = req.payload.id;
+    const { recipeId } = req.params;
+    const { comment } = req.body;
+    const userId = req.payload.id;
 
-    const data = req.body;
-    const { error } = commentSchema.validate(data);
-    if (error) {
-      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-    }
-    data.id = uuidv4();
-    data.user_id = user_id;
-    data.recipe_id = req.params.recipe_id;
+    // Buat komentar baru di basis data
+    const newComment = await models.comment.create({
+      comment,
+      user_id: userId,
+      recipe_id: recipeId,
+    });
 
-    const result = await models.comment.create(data);
-    if (!result) {
-      return commonHelpers.response(res, null, 400, "Failed to create comment");
-    }
+    // Ambil data user terkait dengan komentar
+    const user = await models.user.findByPk(userId);
 
-    const response = {
-      id: result.id,
-      user_id: result.user_id,
-      recipe_id: result.recipe_id,
-      comment: result.comment,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
-
-    commonHelpers.response(res, response, 201, null);
+    // Kirim respons dengan data komentar dan data user terkait
+    res.status(201).json({
+      data: {
+        id: newComment.id,
+        comment: newComment.comment,
+        user: {
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        },
+      },
+    });
   } catch (error) {
+    console.error(error);
     next(error);
   }
 };

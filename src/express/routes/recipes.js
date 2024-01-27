@@ -27,6 +27,7 @@ router.post("/:recipe_id/like", protect, likedController.createLiked);
 router.post("/:recipe_id/save", protect, savedController.createSaved);
 
 // FITURE COMMENT RECIPE
-router.post("/:recipe_id/comments", protect, commentsController.createComment);
+router.get("/:recipeId/comments", protect, commentsController.getAllComments);
+router.post("/:recipeId/comments", protect, commentsController.createComment);
 
 module.exports = router;
