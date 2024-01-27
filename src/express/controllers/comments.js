@@ -44,6 +44,37 @@ const getAll = async (req, res, next) => {
   }
 };
 
+const getAllComments = async (req, res, next) => {
+  try {
+    const { recipe_id } = req.params;
+
+    const comments = await models.comment.findAll({
+      where: {
+        recipe_id: recipe_id,
+      },
+      include: {
+        model: models.user,
+        attributes: ["id", "name", "image"],
+      },
+    });
+
+    res.status(200).json({
+      data: comments.map((comment) => ({
+        id: comment.id,
+        text: comment.text,
+        user: {
+          id: comment.user.id,
+          name: comment.user.name,
+          image: comment.user.image,
+        },
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
 const getCommentById = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -154,6 +185,7 @@ const deleteComment = async (req, res, next) => {
 
 module.exports = {
   getAll,
+  getAllComments,
   getCommentById,
   createComment,
   updateComment,
