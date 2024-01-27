@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "saves",
         onDelete: "CASCADE",
       });
+
+      recipe.belongsTo(models.user, {
+        foreignKey: "user_id",
+      });
     }
   }
   recipe.init(
