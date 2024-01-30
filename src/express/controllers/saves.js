@@ -61,7 +61,7 @@ const getSavedById = async (req, res, next) => {
 
 const saveRecipe = async (req, res, next) => {
   try {
-    const recipe = await models.Recipe.findByPk(req.params.recipe_id);
+    const recipe = await models.recipe.findByPk(req.params.recipe_id);
 
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });

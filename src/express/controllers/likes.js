@@ -64,7 +64,7 @@ const getLikedById = async (req, res, next) => {
 // In your recipes controller
 const likeRecipe = async (req, res, next) => {
   try {
-    const recipe = await models.Recipe.findByPk(req.params.recipe_id);
+    const recipe = await models.recipe.findByPk(req.params.recipe_id);
 
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });
