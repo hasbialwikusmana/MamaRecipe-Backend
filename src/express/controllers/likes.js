@@ -72,8 +72,7 @@ const createLiked = async (req, res, next) => {
     });
 
     if (existingLike) {
-      await models.like.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+      return commonHelpers.response(res, null, 400, "Recipe already liked");
     } else {
       const data = { id: uuidv4(), user_id, recipe_id };
 
@@ -94,8 +93,30 @@ const createLiked = async (req, res, next) => {
   }
 };
 
+const unlikeRecipe = async (req, res, next) => {
+  try {
+    const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
+
+    // Check if the user has liked the recipe
+    const existingLike = await models.like.findOne({
+      where: { user_id, recipe_id },
+    });
+
+    if (!existingLike) {
+      return commonHelpers.response(res, null, 400, "Recipe not liked");
+    } else {
+      await models.like.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAll,
   getLikedById,
   createLiked,
+  unlikeRecipe,
 };

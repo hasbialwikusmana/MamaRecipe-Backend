@@ -178,16 +178,19 @@ const getLikeRecipes = async (req, res, next) => {
     const userId = req.payload.id;
 
     const result = await models.recipe.findAndCountAll({
-      where: {
-        user_id: userId,
-      },
+      include: [
+        {
+          model: models.like,
+          as: "likes",
+          where: { user_id: userId },
+        },
+      ],
       attributes: {
         include: [
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
         ],
       },
-
       order: [[models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "DESC"]],
       limit: limit,
       offset: offset,
@@ -216,16 +219,19 @@ const getSavesRecipes = async (req, res, next) => {
     const userId = req.payload.id;
 
     const result = await models.recipe.findAndCountAll({
-      where: {
-        user_id: userId,
-      },
+      include: [
+        {
+          model: models.save,
+          as: "saves",
+          where: { user_id: userId },
+        },
+      ],
       attributes: {
         include: [
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
         ],
       },
-
       order: [[models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "DESC"]],
       limit: limit,
       offset: offset,
