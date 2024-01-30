@@ -67,15 +67,17 @@ const likeRecipe = async (req, res, next) => {
     const recipe = await models.recipe.findByPk(req.params.recipe_id);
 
     if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+      return commonHelpers.response(res, null, 404, "Recipe not found");
     }
 
     // Check if the user has already liked the recipe
     if (!recipe.isLiked) {
-      await recipe.update({ isLiked: true });
-      return res.status(200).json({ message: "Recipe liked successfully" });
+      recipe.isLiked = true;
+      await recipe.save();
+      return commonHelpers.response(res, null, 200, "Recipe liked successfully");
     } else {
-      await recipe.update({ isLiked: false });
+      recipe.isLiked = false;
+      await recipe.save();
       return res.status(200).json({ message: "Recipe unliked successfully" });
     }
   } catch (error) {

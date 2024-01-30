@@ -67,14 +67,13 @@ const saveRecipe = async (req, res, next) => {
       return res.status(404).json({ message: "Recipe not found" });
     }
 
-    // Check if the user has already saved the recipe
-    if (!recipe.isSaved) {
-      await recipe.update({ isSaved: true });
-      return res.status(200).json({ message: "Recipe saved successfully" });
-    } else {
-      await recipe.update({ isSaved: false });
-      return res.status(200).json({ message: "Recipe unsaved successfully" });
-    }
+    // Toggle the value of isSaved
+    recipe.isSaved = !recipe.isSaved;
+
+    // Save the changes
+    await recipe.save();
+
+    return res.status(200).json({ message: recipe.isSaved ? "Recipe saved successfully" : "Recipe unsaved successfully" });
   } catch (error) {
     next(error);
   }
