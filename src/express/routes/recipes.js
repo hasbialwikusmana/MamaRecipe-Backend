@@ -21,13 +21,14 @@ router.delete("/:id", protect, recipesController.deleteRecipe);
 
 // FITURE LIKE RECIPE
 router.post("/:recipe_id/like", protect, likedController.createLiked);
-
+router.delete("/:recipe_id/unlike", protect, likedController.unlikeRecipe);
 // FITURE SAVE RECIPE
 
-router.post("/:recipe_id/save", protect, savedController.createSaved);
+router.post("/:recipe_id/save", protect, savedController.saveRecipe);
+router.delete("/:recipe_id/unsave", protect, savedController.unsaveRecipe);
 
 // FITURE COMMENT RECIPE
-router.get("/:recipeId/comments", protect, commentsController.getAllComments);
-router.post("/:recipeId/comments", protect, commentsController.createComment);
+router.get("/:recipe_id/comments", protect, commentsController.getAllComments);
+router.post("/:recipe_id/comments", protect, commentsController.createComment);
 
 module.exports = router;
