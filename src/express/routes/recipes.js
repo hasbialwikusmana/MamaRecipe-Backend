@@ -7,6 +7,7 @@ const commentsController = require("../controllers/comments");
 
 const protect = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
+const checkLikeSaveStatus = require("../middlewares/checkLikeSaveStatus");
 
 router.get("/", protect, recipesController.getAll);
 router.get("/myRecipes", protect, recipesController.getAllMyRecipe);
@@ -20,12 +21,10 @@ router.put("/:id", protect, upload, recipesController.updateRecipe);
 router.delete("/:id", protect, recipesController.deleteRecipe);
 
 // FITURE LIKE RECIPE
-router.post("/:recipe_id/like", protect, likedController.createLiked);
-router.delete("/:recipe_id/unlike", protect, likedController.unlikeRecipe);
+router.post("/:recipe_id/like", protect, checkLikeSaveStatus, likedController.likeRecipe);
 // FITURE SAVE RECIPE
 
-router.post("/:recipe_id/save", protect, savedController.saveRecipe);
-router.delete("/:recipe_id/unsave", protect, savedController.unsaveRecipe);
+router.post("/:recipe_id/save", protect, checkLikeSaveStatus, savedController.saveRecipe);
 
 // FITURE COMMENT RECIPE
 router.get("/:recipeId/comments", protect, commentsController.getAllComments);

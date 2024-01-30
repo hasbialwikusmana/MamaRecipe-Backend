@@ -61,55 +61,20 @@ const getSavedById = async (req, res, next) => {
 
 const saveRecipe = async (req, res, next) => {
   try {
-    const user_id = req.payload.id;
-    const recipe_id = req.params.recipe_id;
+    const recipe = await models.Recipe.findByPk(req.params.recipe_id);
+
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
 
     // Check if the user has already saved the recipe
-    const existingSave = await models.save.findOne({
-      where: { user_id, recipe_id },
-    });
-
-    if (existingSave) {
-      await models.save.create({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unsave successfully");
+    if (!recipe.isSaved) {
+      await recipe.update({ isSaved: true });
+      return res.status(200).json({ message: "Recipe saved successfully" });
+    } else {
+      await recipe.update({ isSaved: false });
+      return res.status(200).json({ message: "Recipe unsaved successfully" });
     }
-
-    const data = { id: uuidv4(), user_id, recipe_id };
-
-    const result = await models.save.create(data);
-
-    const response = {
-      id: result.id,
-      user_id: result.user_id,
-      recipe_id: result.recipe_id,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
-
-    commonHelpers.response(res, response, 201, "Recipe saved successfully");
-  } catch (error) {
-    next(error);
-  }
-};
-
-const unsaveRecipe = async (req, res, next) => {
-  try {
-    const user_id = req.payload.id;
-    const recipe_id = req.params.recipe_id;
-
-    // Check if the user has saved the recipe
-    const existingSave = await models.save.findOne({
-      where: { user_id, recipe_id },
-    });
-
-    if (!existingSave) {
-      await models.save.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 400, "Recipe not saved");
-    }
-
-    await models.save.destroy({ where: { user_id, recipe_id } });
-
-    commonHelpers.response(res, null, 200, "Recipe unsaved successfully");
   } catch (error) {
     next(error);
   }
@@ -119,5 +84,4 @@ module.exports = {
   getAll,
   getSavedById,
   saveRecipe,
-  unsaveRecipe,
 };

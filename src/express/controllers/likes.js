@@ -61,55 +61,22 @@ const getLikedById = async (req, res, next) => {
   }
 };
 
-const createLiked = async (req, res, next) => {
+// In your recipes controller
+const likeRecipe = async (req, res, next) => {
   try {
-    const user_id = req.payload.id;
-    const recipe_id = req.params.recipe_id;
+    const recipe = await models.Recipe.findByPk(req.params.recipe_id);
+
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
 
     // Check if the user has already liked the recipe
-    const existingLike = await models.like.findOne({
-      where: { user_id, recipe_id },
-    });
-
-    if (existingLike) {
-      await models.like.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+    if (!recipe.isLiked) {
+      await recipe.update({ isLiked: true });
+      return res.status(200).json({ message: "Recipe liked successfully" });
     } else {
-      const data = { id: uuidv4(), user_id, recipe_id };
-
-      const result = await models.like.create(data);
-
-      const response = {
-        id: result.id,
-        user_id: result.user_id,
-        recipe_id: result.recipe_id,
-        createdAt: result.createdAt,
-        updatedAt: result.updatedAt,
-      };
-
-      commonHelpers.response(res, response, 201, "Recipe liked successfully");
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-const unlikeRecipe = async (req, res, next) => {
-  try {
-    const user_id = req.payload.id;
-    const recipe_id = req.params.recipe_id;
-
-    // Check if the user has liked the recipe
-    const existingLike = await models.like.findOne({
-      where: { user_id, recipe_id },
-    });
-
-    if (!existingLike) {
-      await models.like.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 400, "Recipe not liked");
-    } else {
-      await models.like.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+      await recipe.update({ isLiked: false });
+      return res.status(200).json({ message: "Recipe unliked successfully" });
     }
   } catch (error) {
     next(error);
@@ -119,6 +86,5 @@ const unlikeRecipe = async (req, res, next) => {
 module.exports = {
   getAll,
   getLikedById,
-  createLiked,
-  unlikeRecipe,
+  likeRecipe,
 };
