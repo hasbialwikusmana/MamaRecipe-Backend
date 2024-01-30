@@ -61,19 +61,17 @@ const getSavedById = async (req, res, next) => {
 
 const saveRecipe = async (req, res, next) => {
   try {
-    const recipe = await models.recipe.findByPk(req.params.recipe_id);
+    const { id } = req.params;
+
+    const recipe = await models.recipe.findByPk(id);
 
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });
     }
 
-    // Toggle the value of isSaved
-    recipe.isSaved = !recipe.isSaved;
+    await recipe.update({ isSaved: !recipe.isSaved });
 
-    // Save the changes
-    await recipe.save();
-
-    return res.status(200).json({ message: recipe.isSaved ? "Recipe saved successfully" : "Recipe unsaved successfully" });
+    return res.status(200).json({ message: `Recipe ${recipe.isSaved ? "saved" : "unsaved"} successfully` });
   } catch (error) {
     next(error);
   }
