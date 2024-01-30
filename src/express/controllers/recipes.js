@@ -37,7 +37,8 @@ const getAll = async (req, res, next) => {
       include: [
         {
           model: models.user,
-          attributes: ["id", "name", "image"], // Include the fields you need
+          as: "user",
+          attributes: ["id", "name", "image"],
         },
       ],
     });
