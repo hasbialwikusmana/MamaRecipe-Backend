@@ -61,19 +61,56 @@ const getLikedById = async (req, res, next) => {
   }
 };
 
-const likeRecipe = async (req, res, next) => {
+const createLiked = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
 
-    const recipe = await models.recipe.findByPk(id);
+    // Check if the user has already liked the recipe
+    const existingLike = await models.like.findOne({
+      where: { user_id, recipe_id },
+    });
 
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+    if (existingLike) {
+      await models.like.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+    } else {
+      const data = { id: uuidv4(), user_id, recipe_id };
+
+      const result = await models.like.create(data);
+
+      const response = {
+        id: result.id,
+        user_id: result.user_id,
+        recipe_id: result.recipe_id,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+      };
+
+      commonHelpers.response(res, response, 201, "Recipe liked successfully");
     }
+  } catch (error) {
+    next(error);
+  }
+};
 
-    await recipe.update({ isLiked: !recipe.isLiked });
+const unlikeRecipe = async (req, res, next) => {
+  try {
+    const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
 
-    return res.status(200).json({ message: `Recipe ${recipe.isLiked ? "liked" : "unliked"} successfully` });
+    // Check if the user has liked the recipe
+    const existingLike = await models.like.findOne({
+      where: { user_id, recipe_id },
+    });
+
+    if (!existingLike) {
+      await models.like.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 400, "Recipe not liked");
+    } else {
+      await models.like.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 200, "Recipe unliked successfully");
+    }
   } catch (error) {
     next(error);
   }
@@ -82,5 +119,6 @@ const likeRecipe = async (req, res, next) => {
 module.exports = {
   getAll,
   getLikedById,
-  likeRecipe,
+  createLiked,
+  unlikeRecipe,
 };
