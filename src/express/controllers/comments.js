@@ -5,13 +5,9 @@ const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
-const validateCommentSchema = (data) => {
-  const schema = Joi.object({
-    comment: Joi.string().required().trim(),
-  });
-
-  return schema.validate(data);
-};
+const commentSchema = Joi.object({
+  comment: Joi.string().required(),
+});
 
 const getAll = async (req, res, next) => {
   try {
@@ -26,6 +22,7 @@ const getAll = async (req, res, next) => {
       where: {
         [models.Sequelize.Op.or]: [models.Sequelize.literal(`LOWER("comment") LIKE LOWER('%${search}%')`)],
       },
+
       attributes: { exclude: ["password"] },
       order: [[sortBy, order]],
       limit: limit,
@@ -47,6 +44,8 @@ const getAll = async (req, res, next) => {
   }
 };
 
+// GET ALL COMMENT BY RECIPE ID YANG NANTI NYA DI PAKAI DI FRONT END UNTUK MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DAN MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DI HALAMAN RECIPE DETAIL DI FRONT END JUGA DAN MENMPILKAN USER IMAGE DAN NAME DI SETIAP COMMENT
+
 const getAllComments = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -60,7 +59,7 @@ const getAllComments = async (req, res, next) => {
         {
           model: models.user,
           as: "user",
-          attributes: ["id", "name", "image"],
+          attributes: ["id", "name", "image"], // Include the fields you need
         },
       ],
     });
@@ -102,103 +101,80 @@ const getCommentById = async (req, res, next) => {
 
 const createComment = async (req, res, next) => {
   try {
-    const user_id = req.payload.id;
-    const recipe_id = req.params.recipe_id;
-    const data = req.body;
+    const { comment } = req.body;
+    const recipeId = req.params.recipeId;
+    const userId = req.payload.id; // Ambil user id dari payload (setelah proses otentikasi)
 
-    const { error } = validateCommentSchema(data);
-
-    if (error) {
-      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-    }
-
-    data.id = uuidv4();
-    data.user_id = user_id;
-    data.recipe_id = recipe_id;
-
-    const result = await models.comment.create(data);
-
-    if (!result) {
-      return commonHelpers.response(res, null, 500, "Failed to create comment");
-    }
-
-    const response = {
-      id: result.id,
-      user_id: result.user_id,
-      recipe_id: result.recipe_id,
-      comment: result.comment,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
+    const newComment = {
+      comment,
+      recipe_id: recipeId,
+      user_id: userId,
     };
 
-    commonHelpers.response(res, response, 201, null);
+    const createdComment = await models.comment.create(newComment, {
+      include: [
+        {
+          model: models.user,
+          as: "user",
+          attributes: ["id", "name", "image"],
+        },
+      ],
+    });
+
+    commonHelpers.response(res, createdComment, 201, "Comment created successfully");
   } catch (error) {
-    next(error);
+    console.log(error);
+    next(errorServer);
   }
 };
 
 const updateComment = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const user_id = req.payload.id;
-    const data = req.body;
+    const commentId = req.params.commentId;
+    const userId = req.payload.id;
+    const { comment } = req.body;
 
-    const checkComment = await models.comment.findByPk(id);
+    const existingComment = await models.comment.findOne({
+      where: {
+        id: commentId,
+        user_id: userId,
+      },
+    });
 
-    if (!checkComment) {
-      return commonHelpers.response(res, null, 404, "Comment not found");
+    if (!existingComment) {
+      return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
     }
 
-    const { error } = validateCommentSchema(data);
+    const updatedComment = await existingComment.update({ comment });
 
-    if (error) {
-      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-    }
-
-    const [result] = await models.comment.update(data, { where: { id } });
-
-    if (!result) {
-      return commonHelpers.response(res, null, 400, "Failed to update comment");
-    }
-
-    const response = {
-      id,
-      user_id,
-      recipe_id: checkComment.recipe_id,
-      comment: data.comment,
-      createdAt: checkComment.createdAt,
-      updatedAt: checkComment.updatedAt,
-    };
-
-    commonHelpers.response(res, response, 200, null);
+    commonHelpers.response(res, updatedComment, 200, "Comment updated successfully");
   } catch (error) {
-    next(error);
+    console.log(error);
+    next(errorServer);
   }
 };
-
 const deleteComment = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const user_id = req.payload.id;
-    const checkComment = await models.comment.findByPk(id);
+    const commentId = req.params.commentId;
+    const userId = req.payload.id;
 
-    if (!checkComment) {
-      return commonHelpers.response(res, null, 404, "Comment not found");
+    const existingComment = await models.comment.findOne({
+      where: {
+        id: commentId,
+        user_id: userId,
+      },
+    });
+
+    if (!existingComment) {
+      return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
     }
 
-    if (checkComment.user_id !== user_id) {
-      return commonHelpers.response(res, null, 403, "Forbidden");
-    }
+    await existingComment.destroy();
 
-    const result = await models.comment.destroy({ where: { id } });
-
-    if (!result) {
-      return commonHelpers.response(res, null, 400, "Failed to delete comment");
-    }
-
-    commonHelpers.response(res, result, 200, null);
+    commonHelpers.response(res, null, 200, "Comment deleted successfully");
   } catch (error) {
-    next(error);
+    console.log(error);
+    next(errorServer);
   }
 };
 
