@@ -70,8 +70,8 @@ const saveRecipe = async (req, res, next) => {
     });
 
     if (existingSave) {
-      await models.save.destroy({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unsaved successfully");
+      await models.save.create({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 200, "Recipe unsave successfully");
     }
 
     const data = { id: uuidv4(), user_id, recipe_id };
