@@ -12,28 +12,24 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "recipe_id",
         as: "likes",
         onDelete: "CASCADE",
-        onUpdate: "CASCADE",
       });
 
       recipe.hasMany(models.save, {
         foreignKey: "recipe_id",
         as: "saves",
         onDelete: "CASCADE",
-        onUpdate: "CASCADE",
       });
 
       recipe.belongsTo(models.user, {
         foreignKey: "user_id",
         as: "user",
         onDelete: "CASCADE",
-        onUpdate: "CASCADE",
       });
 
       recipe.hasMany(models.comment, {
         foreignKey: "recipe_id",
         as: "comments",
         onDelete: "CASCADE",
-        onUpdate: "CASCADE",
       });
     }
   }
