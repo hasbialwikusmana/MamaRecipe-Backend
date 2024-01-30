@@ -70,7 +70,8 @@ const saveRecipe = async (req, res, next) => {
     });
 
     if (existingSave) {
-      return commonHelpers.response(res, null, 200, "Recipe already saved");
+      await models.save.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 200, "Recipe unsaved successfully");
     }
 
     const data = { id: uuidv4(), user_id, recipe_id };
@@ -102,7 +103,8 @@ const unsaveRecipe = async (req, res, next) => {
     });
 
     if (!existingSave) {
-      return commonHelpers.response(res, null, 200, "Recipe not saved");
+      await models.save.destroy({ where: { user_id, recipe_id } });
+      return commonHelpers.response(res, null, 400, "Recipe not saved");
     }
 
     await models.save.destroy({ where: { user_id, recipe_id } });
