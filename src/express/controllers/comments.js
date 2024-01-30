@@ -59,9 +59,12 @@ const getAllComments = async (req, res, next) => {
         {
           model: models.user,
           as: "user",
-          attributes: ["id", "name", "image"], // Include the fields you need
+          attributes: ["id", "name", "image"],
         },
       ],
+      order: [["createdAt", "DESC"]],
+      offset: (page - 1) * limit,
+      limit: limit,
     });
 
     const totalPage = Math.ceil(result.count / limit);
