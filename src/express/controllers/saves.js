@@ -5,6 +5,10 @@ const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
 
+const saveSchema = Joi.object({
+  recipe_id: Joi.string().uuid().required(),
+});
+
 const getAll = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -55,47 +59,55 @@ const getSavedById = async (req, res, next) => {
   }
 };
 
-// CREATE SAVE RECIPE BY USER ID AND RECIPE ID (POST) /saves
-
 const saveRecipe = async (req, res, next) => {
   try {
-    const userId = req.payload.id;
-    const { recipe_id } = await saveSchema.validateAsync(req.body);
-    const recipe = await models.recipe.findByPk(id);
-    if (!recipe) {
-      commonHelpers.response(res, null, 404, "Recipe not found");
-    }
-    const save = await models.save.findOne({
-      where: { user_id: userId, recipe_id },
+    const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
+
+    // Check if the user has already saved the recipe
+    const existingSave = await models.save.findOne({
+      where: { user_id, recipe_id },
     });
-    if (save) {
-      commonHelpers.response(res, null, 400, "Recipe already saved");
+
+    if (existingSave) {
+      return commonHelpers.response(res, null, 400, "Recipe already saved");
     }
-    const result = await models.save.create({
-      id: uuidv4(),
-      user_id: userId,
-      recipe_id,
-    });
-    commonHelpers.response(res, result, 201);
+
+    const data = { id: uuidv4(), user_id, recipe_id };
+
+    const result = await models.save.create(data);
+
+    const response = {
+      id: result.id,
+      user_id: result.user_id,
+      recipe_id: result.recipe_id,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
+
+    commonHelpers.response(res, response, 201, "Recipe saved successfully");
   } catch (error) {
     next(error);
   }
 };
 
-// DELETE SAVE RECIPE BY USER ID AND RECIPE ID (DELETE) /saves/:id
-
 const unsaveRecipe = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const userId = req.payload.id;
-    const save = await models.save.findOne({
-      where: { user_id: userId, id },
+    const user_id = req.payload.id;
+    const recipe_id = req.params.recipe_id;
+
+    // Check if the user has saved the recipe
+    const existingSave = await models.save.findOne({
+      where: { user_id, recipe_id },
     });
-    if (!save) {
-      commonHelpers.response(res, null, 404, "Save not found");
+
+    if (!existingSave) {
+      return commonHelpers.response(res, null, 400, "Recipe not saved");
     }
-    await save.destroy();
-    commonHelpers.response(res, save, 200);
+
+    await models.save.destroy({ where: { user_id, recipe_id } });
+
+    commonHelpers.response(res, null, 200, "Recipe unsaved successfully");
   } catch (error) {
     next(error);
   }
