@@ -20,12 +20,12 @@ router.put("/:id", protect, upload, recipesController.updateRecipe);
 router.delete("/:id", protect, recipesController.deleteRecipe);
 
 // FITURE LIKE RECIPE
-router.post("/:recipe_id/like", protect, likedController.createLiked);
-router.delete("/:recipe_id/unlike", protect, likedController.unlikeRecipe);
+router.post("/:recipeId/like", protect, likedController.createLiked);
+router.delete("/:recipeId/unlike", protect, likedController.unlikeRecipe);
 // FITURE SAVE RECIPE
 
-router.post("/:recipe_id/save", protect, savedController.saveRecipe);
-router.delete("/:recipe_id/unsave", protect, savedController.unsaveRecipe);
+router.post("/:recipeId/save", protect, savedController.saveRecipe);
+router.delete("/:recipeId/unsave", protect, savedController.unsaveRecipe);
 
 // FITURE COMMENT RECIPE
 router.get("/:recipeId/comments", protect, commentsController.getAllComments);
