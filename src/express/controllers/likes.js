@@ -89,7 +89,7 @@ const createLiked = async (req, res, next) => {
 const unlikeRecipe = async (req, res, next) => {
   try {
     const userId = req.payload.id;
-    const recipeId = req.params.id;
+    const recipeId = req.params.recipe_id;
     const like = await models.like.findOne({
       where: { user_id: userId, recipe_id: recipeId },
     });
