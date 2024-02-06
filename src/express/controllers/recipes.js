@@ -53,6 +53,12 @@ const getAll = async (req, res, next) => {
           where: { user_id: req.payload.id },
           required: false,
         },
+        {
+          model: models.comment,
+          as: "comments",
+          where: { user_id: req.payload.id },
+          required: false,
+        },
       ],
     });
 
@@ -67,10 +73,12 @@ const getAll = async (req, res, next) => {
     const recipesLikeandSave = result.rows.map((recipe) => {
       const isLiked = recipe.likes.length > 0;
       const isSaved = recipe.saves.length > 0;
+      const isCommented = recipe.comments.length > 0;
       return {
         ...recipe.dataValues,
         isLiked,
         isSaved,
+        isCommented,
       };
     });
 
