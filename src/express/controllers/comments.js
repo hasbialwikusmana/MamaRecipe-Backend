@@ -125,71 +125,50 @@ const createComment = async (req, res, next) => {
 
 const updateComment = async (req, res, next) => {
   try {
-    const commentId = req.params.commentId;
+    const id = req.params.id;
     const userId = req.payload.id;
     const { comment } = req.body;
 
-    console.log("Updating comment:", commentId, "by user:", userId);
-
-    const existingComment = await models.comment.findOne({
-      where: {
-        id: commentId,
-        user_id: userId,
-      },
-      include: [
-        {
-          model: models.user,
-          as: "user",
-          attributes: ["id", "name", "image"],
-        },
-      ],
-    });
+    const existingComment = await models.comment.findByPk(id);
 
     if (!existingComment) {
-      console.log("Comment not found or permission denied");
-      return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
+      return commonHelpers.response(res, null, 404, "Comment not found");
     }
 
-    console.log("Existing Comment:", existingComment);
+    if (existingComment.user_id !== userId) {
+      return commonHelpers.response(res, null, 403, "Forbidden - You do not have permission to access this comment");
+    }
 
-    const updatedComment = await existingComment.update({ comment });
+    existingComment.comment = comment;
+    await existingComment.save();
 
-    console.log("Updated Comment:", updatedComment);
-
-    commonHelpers.response(res, updatedComment, 200, "Comment updated successfully");
+    commonHelpers.response(res, existingComment, 200, "Comment updated successfully");
   } catch (error) {
-    console.error("Error updating comment:", error);
+    console.log(error);
     next(errorServer);
   }
 };
+
 const deleteComment = async (req, res, next) => {
   try {
-    const commentId = req.params.commentId;
+    const id = req.params.id;
     const userId = req.payload.id;
 
-    console.log("Deleting comment:", commentId, "by user:", userId);
-
-    const existingComment = await models.comment.findOne({
-      where: {
-        id: commentId,
-        user_id: userId,
-      },
-    });
+    const existingComment = await models.comment.findByPk(id);
 
     if (!existingComment) {
-      console.log("Comment not found or permission denied");
-      return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
+      return commonHelpers.response(res, null, 404, "Comment not found");
     }
 
-    console.log("Existing Comment:", existingComment);
+    if (existingComment.user_id !== userId) {
+      return commonHelpers.response(res, null, 403, "Forbidden - You do not have permission to access this comment");
+    }
 
     await existingComment.destroy();
 
-    console.log("Comment deleted successfully");
-
     commonHelpers.response(res, null, 200, "Comment deleted successfully");
   } catch (error) {
-    console.error("Error deleting comment:", error);
+    console.log(error);
     next(errorServer);
   }
 };
