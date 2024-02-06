@@ -134,6 +134,13 @@ const updateComment = async (req, res, next) => {
         id: commentId,
         user_id: userId,
       },
+      include: [
+        {
+          model: models.user,
+          as: "user",
+          attributes: ["id", "name", "image"],
+        },
+      ],
     });
 
     if (!existingComment) {
@@ -148,6 +155,7 @@ const updateComment = async (req, res, next) => {
     next(errorServer);
   }
 };
+
 const deleteComment = async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
@@ -158,6 +166,13 @@ const deleteComment = async (req, res, next) => {
         id: commentId,
         user_id: userId,
       },
+      include: [
+        {
+          model: models.user,
+          as: "user",
+          attributes: ["id", "name", "image"],
+        },
+      ],
     });
 
     if (!existingComment) {
