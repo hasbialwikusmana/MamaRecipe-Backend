@@ -70,8 +70,8 @@ const saveRecipe = async (req, res, next) => {
     });
 
     if (existingSave) {
-      await models.save.create({ where: { user_id, recipe_id } });
-      return commonHelpers.response(res, null, 200, "Recipe unsave successfully");
+      // User has already saved the recipe, handle accordingly
+      return commonHelpers.response(res, null, 400, "Recipe already saved");
     }
 
     const data = { id: uuidv4(), user_id, recipe_id };
@@ -103,7 +103,7 @@ const unsaveRecipe = async (req, res, next) => {
     });
 
     if (!existingSave) {
-      await models.save.destroy({ where: { user_id, recipe_id } });
+      // User hasn't saved the recipe, handle accordingly
       return commonHelpers.response(res, null, 400, "Recipe not saved");
     }
 
