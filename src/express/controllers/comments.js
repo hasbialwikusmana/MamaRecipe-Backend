@@ -129,6 +129,8 @@ const updateComment = async (req, res, next) => {
     const userId = req.payload.id;
     const { comment } = req.body;
 
+    console.log("Updating comment:", commentId, "by user:", userId);
+
     const existingComment = await models.comment.findOne({
       where: {
         id: commentId,
@@ -144,46 +146,50 @@ const updateComment = async (req, res, next) => {
     });
 
     if (!existingComment) {
+      console.log("Comment not found or permission denied");
       return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
     }
 
+    console.log("Existing Comment:", existingComment);
+
     const updatedComment = await existingComment.update({ comment });
+
+    console.log("Updated Comment:", updatedComment);
 
     commonHelpers.response(res, updatedComment, 200, "Comment updated successfully");
   } catch (error) {
-    console.log(error);
+    console.error("Error updating comment:", error);
     next(errorServer);
   }
 };
-
 const deleteComment = async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
     const userId = req.payload.id;
 
+    console.log("Deleting comment:", commentId, "by user:", userId);
+
     const existingComment = await models.comment.findOne({
       where: {
         id: commentId,
         user_id: userId,
       },
-      include: [
-        {
-          model: models.user,
-          as: "user",
-          attributes: ["id", "name", "image"],
-        },
-      ],
     });
 
     if (!existingComment) {
+      console.log("Comment not found or permission denied");
       return commonHelpers.response(res, null, 404, "Comment not found or you don't have permission");
     }
 
+    console.log("Existing Comment:", existingComment);
+
     await existingComment.destroy();
+
+    console.log("Comment deleted successfully");
 
     commonHelpers.response(res, null, 200, "Comment deleted successfully");
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting comment:", error);
     next(errorServer);
   }
 };
