@@ -41,6 +41,18 @@ const getAll = async (req, res, next) => {
           as: "user",
           attributes: ["id", "name", "image"],
         },
+        {
+          model: models.like,
+          as: "likes",
+          where: { user_id: req.payload.id },
+          required: false,
+        },
+        {
+          model: models.save,
+          as: "saves",
+          where: { user_id: req.payload.id },
+          required: false,
+        },
       ],
     });
 
@@ -52,7 +64,17 @@ const getAll = async (req, res, next) => {
       totalData: result.count,
     };
 
-    commonHelpers.response(res, result.rows, 200, null, pagination);
+    const recipesLikeandSave = result.rows.map((recipe) => {
+      const isLiked = recipe.likes.length > 0;
+      const isSaved = recipe.saves.length > 0;
+      return {
+        ...recipe.dataValues,
+        isLiked,
+        isSaved,
+      };
+    });
+
+    commonHelpers.response(res, recipesLikeandSave, 200, null, pagination);
   } catch (error) {
     console.log(error);
     next(errorServer);
