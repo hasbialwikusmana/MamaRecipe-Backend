@@ -29,6 +29,7 @@ const getAll = async (req, res, next) => {
         include: [
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
+          [models.sequelize.literal(`(SELECT COUNT(*) FROM "comments" WHERE "comments"."recipe_id" = "recipe"."id")`), "commentCount"],
         ],
       },
       order: [[sortBy, order]],
@@ -78,7 +79,6 @@ const getAllMyRecipe = async (req, res, next) => {
         include: [
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "likes" WHERE "likes"."recipe_id" = "recipe"."id")`), "likeCount"],
           [models.sequelize.literal(`(SELECT COUNT(*) FROM "saves" WHERE "saves"."recipe_id" = "recipe"."id")`), "saveCount"],
-          [models.sequelize.literal(`(SELECT COUNT(*) FROM "comments" WHERE "comments"."recipe_id" = "recipe"."id")`), "commentCount"],
         ],
       },
       order: [[sortBy, order]],
