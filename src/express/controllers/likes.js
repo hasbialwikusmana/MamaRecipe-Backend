@@ -66,13 +66,11 @@ const createLiked = async (req, res, next) => {
     const user_id = req.payload.id;
     const recipe_id = req.params.recipe_id;
 
-    // Check if the user has already liked the recipe
     const existingLike = await models.like.findOne({
       where: { user_id, recipe_id },
     });
 
     if (existingLike) {
-      // User has already liked the recipe, handle accordingly
       return commonHelpers.response(res, null, 400, "Recipe already liked");
     } else {
       const data = { id: uuidv4(), user_id, recipe_id };
@@ -99,13 +97,11 @@ const unlikeRecipe = async (req, res, next) => {
     const user_id = req.payload.id;
     const recipe_id = req.params.recipe_id;
 
-    // Check if the user has liked the recipe
     const existingLike = await models.like.findOne({
       where: { user_id, recipe_id },
     });
 
     if (!existingLike) {
-      // User hasn't liked the recipe, handle accordingly
       return commonHelpers.response(res, null, 400, "Recipe not liked");
     } else {
       await models.like.destroy({ where: { user_id, recipe_id } });

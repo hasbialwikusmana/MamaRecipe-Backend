@@ -9,10 +9,26 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      user.hasMany(models.comment, { foreignKey: "user_id", as: "comments" });
-      user.hasMany(models.like, { foreignKey: "user_id", as: "likes" });
-      user.hasMany(models.save, { foreignKey: "user_id", as: "saves" });
-      user.hasMany(models.recipe, { foreignKey: "user_id", as: "recipes" });
+      user.hasMany(models.recipe, {
+        foreignKey: "user_id",
+        as: "recipes",
+        onDelete: "CASCADE",
+      });
+      user.hasMany(models.like, {
+        foreignKey: "user_id",
+        as: "likes",
+        onDelete: "CASCADE",
+      });
+      user.hasMany(models.save, {
+        foreignKey: "user_id",
+        as: "saves",
+        onDelete: "CASCADE",
+      });
+      user.hasMany(models.comment, {
+        foreignKey: "user_id",
+        as: "comments",
+        onDelete: "CASCADE",
+      });
     }
   }
   user.init(

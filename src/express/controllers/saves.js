@@ -1,13 +1,8 @@
 const { v4: uuidv4 } = require("uuid");
-const Joi = require("joi");
 const commonHelpers = require("../helpers/common");
 const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
-
-const saveSchema = Joi.object({
-  recipe_id: Joi.string().uuid().required(),
-});
 
 const getAll = async (req, res, next) => {
   try {
@@ -64,13 +59,11 @@ const saveRecipe = async (req, res, next) => {
     const user_id = req.payload.id;
     const recipe_id = req.params.recipe_id;
 
-    // Check if the user has already saved the recipe
     const existingSave = await models.save.findOne({
       where: { user_id, recipe_id },
     });
 
     if (existingSave) {
-      // User has already saved the recipe, handle accordingly
       return commonHelpers.response(res, null, 400, "Recipe already saved");
     }
 
@@ -97,13 +90,11 @@ const unsaveRecipe = async (req, res, next) => {
     const user_id = req.payload.id;
     const recipe_id = req.params.recipe_id;
 
-    // Check if the user has saved the recipe
     const existingSave = await models.save.findOne({
       where: { user_id, recipe_id },
     });
 
     if (!existingSave) {
-      // User hasn't saved the recipe, handle accordingly
       return commonHelpers.response(res, null, 400, "Recipe not saved");
     }
 

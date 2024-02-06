@@ -28,9 +28,9 @@ router.post("/:recipe_id/save", protect, savedController.saveRecipe);
 router.delete("/:recipe_id/unsave", protect, savedController.unsaveRecipe);
 
 // FITURE COMMENT RECIPE
-router.get("/:recipeId/comments", protect, commentsController.getAllComments);
-router.post("/:recipeId/comments", protect, commentsController.createComment);
-router.put("/:recipeId/comments/:id", protect, commentsController.updateComment);
-router.delete("/:recipeId/comments/:id", protect, commentsController.deleteComment);
+router.get("/:recipe_id/comments", protect, commentsController.getAllComments);
+router.post("/:recipe_id/comments", protect, commentsController.createComment);
+router.put("/:recipe_id/comments/:id", protect, commentsController.updateComment);
+router.delete("/:recipe_id/comments/:id", protect, commentsController.deleteComment);
 
 module.exports = router;

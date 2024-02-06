@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require("uuid");
 const Joi = require("joi");
 const commonHelpers = require("../helpers/common");
 const models = require("../databases/models");
@@ -43,8 +42,6 @@ const getAll = async (req, res, next) => {
     next(errorServer);
   }
 };
-
-// GET ALL COMMENT BY RECIPE ID YANG NANTI NYA DI PAKAI DI FRONT END UNTUK MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DAN MENAMPILKAN SEMUA COMMENT DARI RECIPE YANG DI PILIH USER DI HALAMAN RECIPE DETAIL DI FRONT END JUGA DAN MENMPILKAN USER IMAGE DAN NAME DI SETIAP COMMENT
 
 const getAllComments = async (req, res, next) => {
   try {
@@ -106,13 +103,18 @@ const createComment = async (req, res, next) => {
   try {
     const { comment } = req.body;
     const recipeId = req.params.recipeId;
-    const userId = req.payload.id; // Ambil user id dari payload (setelah proses otentikasi)
+    const userId = req.payload.id;
 
     const newComment = {
       comment,
       recipe_id: recipeId,
       user_id: userId,
     };
+
+    const { error } = commentSchema.validate(newComment);
+    if (error) {
+      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
+    }
 
     const createdComment = await models.comment.create(newComment, {
       include: [

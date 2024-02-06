@@ -29,14 +29,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      isLiked: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
-      isSaved: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
       likeCount: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
@@ -57,7 +49,5 @@ module.exports = {
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("recipes");
-    await queryInterface.removeColumn("recipes", "isLiked");
-    await queryInterface.removeColumn("recipes", "isSaved");
   },
 };

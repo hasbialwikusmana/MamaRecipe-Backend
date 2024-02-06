@@ -4,7 +4,7 @@ const usersController = require("../controllers/users");
 const protect = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
 
-// get all users
+// get  users
 router.get("/users", protect, usersController.getAll);
 router.get("/users/profile", protect, usersController.getProfile);
 router.get("/users/:id", protect, usersController.getUserById);

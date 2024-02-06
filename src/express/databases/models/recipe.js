@@ -62,14 +62,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      isLiked: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      isSaved: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
       likeCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
