@@ -1,12 +1,7 @@
-const Joi = require("joi");
 const commonHelpers = require("../helpers/common");
 const models = require("../databases/models");
 const createError = require("http-errors");
 const errorServer = new createError.InternalServerError();
-
-const commentSchema = Joi.object({
-  comment: Joi.string().required(),
-});
 
 const getAll = async (req, res, next) => {
   try {
@@ -110,11 +105,6 @@ const createComment = async (req, res, next) => {
       recipe_id: recipeId,
       user_id: userId,
     };
-
-    const { error } = commentSchema.validate(newComment);
-    if (error) {
-      return commonHelpers.response(res, null, 400, error.details[0].message.replace(/\"/g, ""));
-    }
 
     const createdComment = await models.comment.create(newComment, {
       include: [
