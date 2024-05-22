@@ -150,29 +150,20 @@ const login = async (req, res, next) => {
   }
 };
 
-const refreshToken = async (req, res, next) => {
-  try {
-    const refreshToken = req.body.refreshToken;
+const refreshToken = (req, res) => {
+  const refreshToken = req.body.refreshToken;
+  const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY_JWT);
+  let payload = {
+    id: decoded.user_id,
+    email: decoded.email,
+    role: decoded.role,
+  };
 
-    if (!refreshToken) {
-      return commonHelpers.response(res, null, 401, "Refresh token is required");
-    }
-    const decoded = authHelpers.verifyRefreshToken(refreshToken);
-
-    const user = await models.user.findByPk(decoded.id, { attributes: { exclude: ["password"] } });
-
-    if (!user) {
-      return commonHelpers.response(res, null, 401, "User not found");
-    }
-
-    const newToken = authHelpers.generateToken({ id: user.id, email: user.email });
-    const newRefreshToken = authHelpers.generateRefreshToken({ id: user.id, email: user.email });
-
-    commonHelpers.response(res, { token: newToken, refreshToken: newRefreshToken }, 200, null);
-  } catch (error) {
-    console.log(error);
-    next(errorServer);
-  }
+  const result = {
+    token: authHelpers.generateToken(payload),
+    refreshToken: authHelpers.generateRefreshToken(payload),
+  };
+  commonHelpers.response(res, result, 200);
 };
 
 const getProfile = async (req, res, next) => {
