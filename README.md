@@ -121,13 +121,13 @@ CLOUD_API_SECRET =
 
 ## Related Project
 
-:rocket: [`Backend Hire Job`](https://github.com/hasbialwikusmana/MamaRecipe-Backend)
+:rocket: [`Backend Mama Recipe`](https://github.com/hasbialwikusmana/MamaRecipe-Backend)
 
-:rocket: [`Frontend Hire Job`](https://github.com/hasbialwikusmana/MamaRecipe-Frontend)
+:rocket: [`Frontend Mama Recipe`](https://github.com/hasbialwikusmana/MamaRecipe-Frontend)
 
 :rocket: [`Web Service`](https://mama-recipe-backend.vercel.app)
 
-:rocket: [`Demo Hire Job`](https://mamarecipe-fe.netlify.app/)
+:rocket: [`Demo Mama Recipe`](https://mamarecipe-fe.netlify.app/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
