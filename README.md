@@ -16,6 +16,18 @@ h3 align="center">Mama Recipe</h3>
   </p>
 </div>
 
+### Features
+
+- **User Authentication**: Secure login and registration using JWT tokens.
+- **Recipe Management**: Create, read, update, and delete recipes.
+- **Recipe Categories**: Organize recipes into categories.
+- **Image Upload**: Manage recipe images using Cloudinary.
+- **Review System**: Users can leave reviews on recipes.
+- **Search Functionality**: Search for recipes by keywords or categories.
+- **User Profiles**: Manage user profiles and their own recipes.
+- **Data Storage**: Persistent storage using PostgreSQL.
+- **Environment Configuration**: Easily configurable using .env files.
+
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -31,6 +43,7 @@ This app was built with some technologies below:
 - [NodeJS](https://nodejs.org/)
 - [Cloudinary](https://cloudinary.com/)
 - [JSON Web Token (JWT)](https://jwt.io/)
+- [Sequelize](https://sequelize.org/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
