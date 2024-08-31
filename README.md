@@ -16,6 +16,12 @@
   </p>
 </div>
 
+<!-- ABOUT THE PROJECT -->
+
+## About The Project
+
+**Mama Recipe** is a recipe website that offers various features, such as viewing different recipes, adding new recipes, updating recipe data, deleting recipes, and providing reviews on existing recipes. The website is built using React.js, Express.js, and PostgreSQL for data storage. This project was developed individually by Hasbi as a Full Stack Web Developer.
+
 ### Features
 
 - **User Authentication**: Secure login and registration using JWT tokens.
@@ -27,12 +33,6 @@
 - **User Profiles**: Manage user profiles and their own recipes.
 - **Data Storage**: Persistent storage using PostgreSQL.
 - **Environment Configuration**: Easily configurable using .env files.
-
-<!-- ABOUT THE PROJECT -->
-
-## About The Project
-
-**Mama Recipe** is a recipe website that offers various features, such as viewing different recipes, adding new recipes, updating recipe data, deleting recipes, and providing reviews on existing recipes. The website is built using React.js, Express.js, and PostgreSQL for data storage. This project was developed individually by Hasbi as a Full Stack Web Developer.
 
 ### Built With
 
