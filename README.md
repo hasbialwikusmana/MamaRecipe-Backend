@@ -7,7 +7,7 @@
     <img src="https://github.com/user-attachments/assets/d84cff47-7c18-40d5-8abd-91f853b4e760" alt="Logo" width="100%">
   </a>
 
-h3 align="center">Mama Recipe</h3>
+<h3 align="center">Mama Recipe</h3>
 
   <p align="center">
  Mama Recipe is a recipe sharing platform that allows users to share, explore, and create various recipes.
@@ -32,7 +32,7 @@ h3 align="center">Mama Recipe</h3>
 
 ## About The Project
 
-**Mama Recipe** is a platform for food enthusiasts where users can share their favorite recipes, explore new ones, and manage their recipe collections easily.
+**Mama Recipe** is a recipe website that offers various features, such as viewing different recipes, adding new recipes, updating recipe data, deleting recipes, and providing reviews on existing recipes. The website is built using React.js, Express.js, and PostgreSQL for data storage. This project was developed individually by Hasbi as a Full Stack Web Developer.
 
 ### Built With
 
